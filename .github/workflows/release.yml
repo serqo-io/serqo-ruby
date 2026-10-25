@@ -9,10 +9,16 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
+    environment:
+      name: rubygems
+      url: https://rubygems.org/gems/serqo
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
@@ -23,36 +29,9 @@ jobs:
             tag = ENV["GITHUB_REF_NAME"].delete_prefix("v")
             exit("Tag #{ENV["GITHUB_REF_NAME"]} does not match gem version #{version}") unless tag == version
           '
-      - name: Build gem
-        run: gem build serqo.gemspec
-      - name: Verify installable
+      - name: Build and verify locally
         run: |
+          gem build serqo.gemspec
           gem install ./serqo-*.gem --no-document
           ruby -e "require 'serqo'; Serqo::Client.new(api_key: 'test'); puts 'SDK loads OK'"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ruby-gem
-          path: serqo-*.gem
-          if-no-files-found: error
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: rubygems
-      url: https://rubygems.org/gems/serqo
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: ruby-gem
-          path: dist/
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-      - name: Update RubyGems for trusted publishing
-        run: gem update --system --no-document
-      - name: Publish to RubyGems
-        run: gem push dist/serqo-*.gem
+      - uses: rubygems/release-gem@v1
