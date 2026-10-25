@@ -9,14 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: rubygems
-      url: https://rubygems.org/gems/serqo
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v5
       - uses: ruby/setup-ruby@v1
@@ -29,9 +23,36 @@ jobs:
             tag = ENV["GITHUB_REF_NAME"].delete_prefix("v")
             exit("Tag #{ENV["GITHUB_REF_NAME"]} does not match gem version #{version}") unless tag == version
           '
-      - name: Build and verify locally
+      - name: Build gem
         run: |
           gem build serqo.gemspec
-          gem install ./serqo-*.gem --no-document
+          mkdir -p dist
+          mv serqo-*.gem dist/
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gem
+          path: dist/*.gem
+      - name: Install and smoke load
+        run: |
+          gem install ./dist/serqo-*.gem --no-document
           ruby -e "require 'serqo'; Serqo::Client.new(api_key: 'test'); puts 'SDK loads OK'"
-      - uses: rubygems/release-gem@v1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: rubygems
+      url: https://rubygems.org/gems/serqo
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: gem
+          path: dist
+      - name: Configure RubyGems credentials via OIDC
+        uses: rubygems/configure-rubygems-credentials@v2.1.0
+      - name: Publish to RubyGems
+        run: gem push dist/serqo-*.gem
