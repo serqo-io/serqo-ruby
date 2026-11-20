@@ -1,6 +1,6 @@
 # Serqo Ruby SDK
 
-Official Ruby client for the [Serqo Search API](https://serqo.io). Serqo provides real-time, low-latency Google, Bing, Baidu, and multi-engine SERP data. New accounts get 100 free requests on [serqo.io](https://serqo.io).
+Official Ruby client for the [Serqo Search API](https://serqo.io). Retrieve clean, structured Google & Bing SERP results in JSON with zero proxy setup. Get started with 100 free requests on [serqo.io](https://serqo.io).
 
 Requires Ruby 3.1 or later and uses the standard library without external dependencies.
 
