@@ -42,6 +42,13 @@ module Serqo
       request("POST", "/v1/search", body: query, headers: headers)
     end
 
+    # Fetch real-time search suggestions or run multi-round keyword expansion.
+    def autocomplete(query, idempotency_key: nil)
+      headers = {}
+      headers["Idempotency-Key"] = idempotency_key if idempotency_key
+      request("POST", "/v1/autocomplete", body: query, headers: headers)
+    end
+
     # Return the current engine and search-type capability list.
     def engines
       request("GET", "/v1/engines")

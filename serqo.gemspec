@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "serqo"
-  spec.version = "0.1.0"
+  spec.version = "0.1.1"
   spec.summary = "Official Ruby client for the Serqo Search API"
   spec.description = "A dependency-free HTTP client for the public Serqo Search API."
   spec.authors = ["Serqo"]
